@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 iced = { version = "0.13.1", features = ["wgpu", "tokio"] }
-iced_aw = { version = "0.12.2", features = ["sidebar"] }
+reqwest = { version = "0.12.23", features = ["blocking", "json"] }
+serde_json = "1.0.142"
