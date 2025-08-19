@@ -1,5 +1,5 @@
-use iced::widget::{Column, Container, Space, Text, button, column, row, scrollable, text_input};
-use iced::{Element, Font, Length, Theme};
+use iced::widget::{button, column, row, scrollable, text_input, Column, Container, Space, Text};
+use iced::{Element, Font, Length};
 use serde_json::Value;
 
 impl ApiClient {
