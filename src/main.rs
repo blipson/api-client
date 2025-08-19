@@ -1,4 +1,4 @@
-use iced::widget::{Column, button, column, row, text_input, Space, Container, Text, scrollable};
+use iced::widget::{Column, Container, Space, Text, button, column, row, scrollable, text_input};
 use iced::{Element, Font, Length, Theme};
 use serde_json::Value;
 
@@ -15,37 +15,29 @@ impl ApiClient {
         });
 
         let request_box: Option<Element<Message>> = self.show_request_box.then(|| {
-            text_input("Enter request...", &self.text_value)
+            text_input("Enter request...", &self.request_text)
                 .on_input(Message::Type)
-                .on_submit(Message::SubmitRequest)
+                .on_submit(Message::RunRequest)
                 .padding(5)
                 .width(Length::FillPortion(1))
                 .into()
         });
 
-        let run_request: Option<Element<Message>> = self.show_request_box.then(|| {
-            button("Run")
-                .on_press(Message::RunRequest)
-                .into()
-        });
+        let run_request: Option<Element<Message>> = self
+            .show_request_box
+            .then(|| button("Run").on_press(Message::RunRequest).into());
 
-        let request_space: Option<Space> = (self.show_request_box && !self.show_response).then(|| {
-            Space::with_width(Length::FillPortion(1))
-        });
+        let request_space: Option<Space> = (self.show_request_box && !self.show_response)
+            .then(|| Space::with_width(Length::FillPortion(1)));
 
         let response: Option<Element<Message>> = self.show_response.then(|| {
             Container::new(
-                scrollable(
-                    Text::new(&self.response)
-                        .font(Font::MONOSPACE)
-                        .size(14)
-                )
-                    .height(Length::Fixed(240.0))
-                    .width(Length::Fill)
+                scrollable(Text::new(&self.response).font(Font::MONOSPACE).size(14))
+                    .width(Length::Fill),
             )
-                .padding(10)
-                .width(Length::Fill)
-                .into()
+            .padding(10)
+            .width(Length::Fill)
+            .into()
         });
 
         column![
@@ -63,7 +55,7 @@ impl ApiClient {
 struct ApiClient {
     show_dropdown: bool,
     show_request_box: bool,
-    text_value: String,
+    request_text: String,
     show_response: bool,
     response: String,
 }
@@ -75,24 +67,25 @@ enum Message {
     CreateRequest,
     CreateFolder,
     RunRequest,
-    SubmitRequest,
 }
 
 impl ApiClient {
     fn update(&mut self, message: Message) {
         match message {
-            Message::Type(value) => self.text_value = value,
+            Message::Type(value) => self.request_text = value,
             Message::ToggleDropdown => {
                 self.show_dropdown = !self.show_dropdown;
             }
             Message::CreateRequest => {
                 self.show_dropdown = false;
                 self.show_request_box = true;
+                self.show_response = false;
+                self.request_text = "".to_string();
             }
             Message::CreateFolder => {
                 self.show_dropdown = false;
             }
-            Message::RunRequest => match reqwest::blocking::get(&self.text_value) {
+            Message::RunRequest => match reqwest::blocking::get(&self.request_text) {
                 Ok(response) => {
                     self.show_response = true;
                     let json: Value = response.json().expect("");
@@ -103,9 +96,6 @@ impl ApiClient {
                     self.response = "Error".to_string();
                 }
             },
-            Message::SubmitRequest => {
-                println!("{}", "submitting...")
-            }
         }
     }
 }
